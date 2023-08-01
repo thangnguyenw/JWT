@@ -11,7 +11,7 @@ class AuthController {
             admin: user.admin
         },
             process.env.JWT_ACCESS_KEY,
-            { expiresIn: "10s" },
+            { expiresIn: "20s" },
         );
     }
     // generate refresh token
@@ -82,7 +82,7 @@ class AuthController {
     }
 
     // requestRefreshToken
-    requestRefreshToken = (req, res, next) => {
+    requestToken = (req, res, next) => {
         const refreshToken = req.cookies.refreshToken;
 
         if (!refreshToken) return res.status(401).json("You 're not authenticated");
@@ -110,6 +110,12 @@ class AuthController {
                 console.log(err);
             }
         });
+    }
+
+    logout = (req, res, next) => {
+        res.clearCookie("refreshToken");
+        refreshTokens = refreshTokens.filter((token) => token !== req.cookies.refreshToken);
+        res.status(200).json("Logged out");
     }
 }
 
