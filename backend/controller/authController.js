@@ -1,5 +1,6 @@
 import User from '../models/userModel.js';
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 
 class AuthController {
     register = async (req, res, next) => {
@@ -35,9 +36,20 @@ class AuthController {
                 user.password
             )
             if(user && validPassword) {
-                res.status(200).json(user)
+                const accessToken = jwt.sign({
+                    id: user.id,
+                    admin: user.admin
+                    },
+                    process.env.JWT_ACCESS_KEY,
+                    {expiresIn: "20s"},
+                );
+                const {password, ...others} = user._doc;
+                res.status(200).json({
+                    ...others, accessToken
+                })
             }
         } catch (err) {
+            console.log(err);
             res.status(500).json({
                 err
             })
