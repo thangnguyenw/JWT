@@ -7,7 +7,7 @@ class UserController {
         try {
             const users = await User.find();
             res.status(200).json(users);
-        } catch {
+        } catch (err) {
             res.status(500).json({
                 err
             })
@@ -27,5 +27,5 @@ class UserController {
     }
 }
 
-const userController = new UserController();
-export default userController;
+// const userController = new UserController();
+export default new UserController();

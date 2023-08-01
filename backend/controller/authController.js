@@ -3,6 +3,28 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 
 class AuthController {
+    // renerate access token
+    generateAccessToken(user) {
+        const accessToken = jwt.sign({
+            id: user.id, // = user._id
+            admin: user.admin
+        },
+            process.env.JWT_ACCESS_KEY,
+            { expiresIn: "60s" },
+        );
+    }
+    // generate refresh token
+    generateRefreshToken(user) {
+        const refreshToken = jwt.sign({
+            id: user.id, // = user._id
+            admin: user.admin
+        },
+            process.env.JWT_REFRESH_KEY,
+            { expiresIn: "30d" },
+        );
+    }
+
+    // register
     register = async (req, res, next) => {
         try {
             const salt = await bcrypt.genSalt(10);
@@ -14,7 +36,7 @@ class AuthController {
                 email: req.body.email,
                 password: hashed
             })
-            const user = await newUser.save();
+            const user = await newUser.save(user);
             res.status(200).json({
                 user
             })
@@ -25,31 +47,24 @@ class AuthController {
         }
     }
 
+    // login
     login = async (req, res, next) => {
         try {
             const user = await User.findOne({ username: req.body.username });
-            if(!user) {
-                res.status(404).json("Wrong username")
-            }
+            if (!user) res.status(404).json("Wrong username")
+
             const validPassword = await bcrypt.compare(
                 req.body.password,
                 user.password
             )
-            if(user && validPassword) {
-                const accessToken = jwt.sign({
-                    id: user.id,
-                    admin: user.admin
-                    },
-                    process.env.JWT_ACCESS_KEY,
-                    {expiresIn: "20s"},
-                );
-                const {password, ...others} = user._doc;
+
+            if (user && validPassword) {
+                const { password, ...others } = user._doc;
                 res.status(200).json({
                     ...others, accessToken
                 })
             }
         } catch (err) {
-            console.log(err);
             res.status(500).json({
                 err
             })
@@ -57,5 +72,10 @@ class AuthController {
     }
 }
 
-const authController = new AuthController();
-export default authController;
+// const authController = new AuthController(user);
+export default new AuthController();
+
+// store token
+// 1 local storage => XSS
+// 2 http only cookies => CSRF -> khắc phục bằng samesite
+// 3 redux store lưu access token và httponly cookies lưu refresh token
