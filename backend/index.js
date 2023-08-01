@@ -13,9 +13,14 @@ const app = express();
 db.connect()
 
 app.use(cors());
+app.use(cookieParser());
 app.use(express.json());
  
 // Routes
+app.get('/v1/auth', function(req, res){
+    res.send("Hello World");
+})
+
 app.use("/v1/auth", authRoute);
 
 app.listen(process.env.PORT, () => {

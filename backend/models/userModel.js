@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
         minlength:6,
         maxlength:20
     },
-    emai: {
+    email: {
         type: String,
         required: true,
         unique: true,
